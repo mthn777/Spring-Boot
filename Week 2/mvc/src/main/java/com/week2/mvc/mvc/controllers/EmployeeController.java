@@ -1,7 +1,7 @@
 package com.week2.mvc.mvc.controllers;
 
-import com.week2.mvc.mvc.entities.EmployeeEnitity;
-import com.week2.mvc.mvc.repositories.EmployeeRepository;
+import com.week2.mvc.mvc.dto.EmployeeDTO;
+import com.week2.mvc.mvc.services.EmployeeServices;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,24 +13,25 @@ public class EmployeeController {
 
 //=============================================================================================================
 
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeServices employeeServices;
 
-    public EmployeeController(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
+
+    public EmployeeController(EmployeeServices employeeServices) {
+        this.employeeServices = employeeServices;
     }
 
 
-//============================================================================================================
+    //============================================================================================================
 
 
     @GetMapping("/{empid}")
-    public EmployeeEnitity getEmployeeById(@PathVariable (name = "empid") Long id){
-        return employeeRepository.findById(id).orElse(null);
+    public EmployeeDTO getEmployeeById(@PathVariable (name = "empid") Long id){
+        return employeeServices.getEmployeeById(id);
     }
 
     @GetMapping
-    public List<EmployeeEnitity> getAllEmployee(@RequestParam (required = false) Long age){
-        return employeeRepository.findAll();
+    public List<EmployeeDTO> getAllEmployee(@RequestParam (required = false) Long age){
+        return employeeServices.getAllEmployee();
     }
 
 //============================================================================================================
@@ -41,7 +42,7 @@ public class EmployeeController {
     */
 
     @PostMapping
-    public EmployeeEnitity updateEmp(@RequestBody EmployeeEnitity newEntity){
-        return employeeRepository.save(newEntity);
+    public EmployeeDTO createNewEmployee(@RequestBody EmployeeDTO inputEmployee){
+        return employeeServices.createNewEmployee(inputEmployee);
     }
 }
