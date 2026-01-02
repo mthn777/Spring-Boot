@@ -1,13 +1,18 @@
 package com.week2.mvc.mvc.controllers;
 
 import com.week2.mvc.mvc.dto.EmployeeDTO;
+import com.week2.mvc.mvc.exception.ResourceNotFoundException;
 import com.week2.mvc.mvc.services.EmployeeServices;
+import jakarta.validation.Valid;
 import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/employee")
@@ -29,8 +34,11 @@ public class EmployeeController {
 
     @GetMapping("/{empid}")
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable (name = "empid") Long id){
-        return ResponseEntity.ok(employeeServices.getEmployeeById(id));
+        return employeeServices.getEmployeeById(id)
+                .map(employeeDTO -> ResponseEntity.ok(employeeDTO))
+                .orElseThrow(() -> new ResourceNotFoundException("Employee Not Found..."));
     }
+
 
     @GetMapping
     public ResponseEntity<List<EmployeeDTO>> getAllEmployee(){
@@ -45,8 +53,8 @@ public class EmployeeController {
     */
 
     @PostMapping
-    public EmployeeDTO createNewEmployee(@RequestBody EmployeeDTO inputEmployee){
-        return employeeServices.createNewEmployee(inputEmployee);
+    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO inputEmployee){
+        return ResponseEntity.ok(employeeServices.createNewEmployee(inputEmployee));
     }
 
 
@@ -54,15 +62,15 @@ public class EmployeeController {
 
 
     @PutMapping(path = "/{empid}")
-    public EmployeeDTO updateEmployeeById(@RequestBody EmployeeDTO employeeDTO, @PathVariable Long empid){
-        return employeeServices.updateEmployeeById(empid, employeeDTO);
+    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody @Validated EmployeeDTO employeeDTO, @PathVariable Long empid){
+        return ResponseEntity.ok(employeeServices.updateEmployeeById(empid, employeeDTO));
     }
 
 //============================================================================================================
 
 
     @PatchMapping(path = "/{empid}")
-    public ResponseEntity<EmployeeDTO> updatePartialEmployeeById(@PathVariable Long empid, @RequestBody Map<String, Object> updates){
+    public ResponseEntity<EmployeeDTO> updatePartialEmployeeById(@PathVariable Long empid, @RequestBody  Map<String, Object> updates){
         return ResponseEntity.ok(employeeServices.updatePartialEmployeeById(empid, updates));
     }
 

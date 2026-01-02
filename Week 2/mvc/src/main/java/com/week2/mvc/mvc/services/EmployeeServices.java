@@ -2,14 +2,17 @@ package com.week2.mvc.mvc.services;
 
 import com.week2.mvc.mvc.dto.EmployeeDTO;
 import com.week2.mvc.mvc.entities.EmployeeEntity;
+import com.week2.mvc.mvc.exception.ResourceNotFoundException;
 import com.week2.mvc.mvc.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 
+import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,11 +35,10 @@ public class EmployeeServices {
 //=====================================================================================================================
 
 
-    public EmployeeDTO getEmployeeById(Long id) {
+    public Optional<EmployeeDTO> getEmployeeById(Long id) {
 
-        EmployeeEntity employeeEntity = employeeRepository.findById(id).orElse(null);
-        return modelMapper.map(employeeEntity,EmployeeDTO.class);
-
+        return employeeRepository.findById(id)
+                .map(employeeEntity -> modelMapper.map(employeeEntity,EmployeeDTO.class));
     }
 
 
@@ -50,7 +52,6 @@ public class EmployeeServices {
                 .stream()
                 .map(employeeEntity -> modelMapper.map(employeeEntity, EmployeeDTO.class))
                 .collect(Collectors.toList());
-
     }
 
 
@@ -60,36 +61,41 @@ public class EmployeeServices {
     public EmployeeDTO createNewEmployee(EmployeeDTO inputEmployee) {
 //        EmployeeEntity employeeEnitity = new EmployeeEntity();
         EmployeeEntity toSaveEntity = modelMapper.map(inputEmployee, EmployeeEntity.class);
-        EmployeeEntity savedEmployeeEntity = employeeRepository.save(toSaveEntity);
-        return modelMapper.map(savedEmployeeEntity, EmployeeDTO.class);
+        return modelMapper.map(employeeRepository.save(toSaveEntity), EmployeeDTO.class);
 
     }
 
+//=====================================================================================================================
 
     public boolean isEmployeeIdExists(Long empid){
-        return employeeRepository.existsById(empid);
+        if(!employeeRepository.existsById(empid)) throw new ResourceNotFoundException("Employee Not Found with the id : "+empid);
+        return true;
     }
 
+//=====================================================================================================================
 
     public EmployeeDTO updateEmployeeById(Long empid, EmployeeDTO employeeDTO) {
 
+        isEmployeeIdExists(empid);
         EmployeeEntity employeeEntity = modelMapper.map(employeeDTO, EmployeeEntity.class);
-        if(!isEmployeeIdExists(empid)) return modelMapper.map(employeeRepository.save(employeeEntity), EmployeeDTO.class);
         employeeEntity.setId(empid);
         EmployeeEntity savedEmployeeEntity = employeeRepository.save(employeeEntity);
         return modelMapper.map(savedEmployeeEntity, EmployeeDTO.class);
     }
 
+//=====================================================================================================================
 
     public boolean deleteEmployeeById(Long empid) {
-        if(!isEmployeeIdExists(empid)) return false;
+        isEmployeeIdExists(empid);
         employeeRepository.deleteById(empid);return true;
     }
+
+//=====================================================================================================================
 
     public EmployeeDTO updatePartialEmployeeById(Long empid, Map<String, Object> updates) {
         EmployeeEntity employeeEntity = employeeRepository.findById(empid).get();
         updates.forEach((fields, value) -> {
-            Field fieldToUpdate = ReflectionUtils.getRequiredField(EmployeeEntity.class, fields);
+            Field fieldToUpdate = ReflectionUtils.findField(EmployeeEntity.class, fields);
             fieldToUpdate.setAccessible(true);
             ReflectionUtils.setField(fieldToUpdate, employeeEntity, value);
         });
