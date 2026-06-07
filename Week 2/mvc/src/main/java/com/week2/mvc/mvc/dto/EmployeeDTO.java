@@ -19,7 +19,6 @@ public class EmployeeDTO {
 
     private Long id;
     @NotBlank(message = "Name of the employee cannot be blank")
-    @Range(min = 3, max = 10)
     private String name;
 
     @NotBlank(message = "Email of the employee cannot be blank")
@@ -27,8 +26,8 @@ public class EmployeeDTO {
     private String email;
 
     @NotNull(message = "Age of the employee cannot be blank")
-    @Min(value = 10, message = "Age cannot be greater than 18.")
-    @Max(value = 80, message = "Age cannot be lesser than 80")
+    @Min(value = 10, message = "Age cannot be lesser than 18.")
+    @Max(value = 80, message = "Age cannot be greater than 80")
     private Integer age;
 
     @EmployeeRoleAnnotation

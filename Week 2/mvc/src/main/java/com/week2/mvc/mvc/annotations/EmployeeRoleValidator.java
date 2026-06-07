@@ -10,7 +10,7 @@ public class EmployeeRoleValidator implements ConstraintValidator<EmployeeRoleAn
     public boolean isValid(String inputRole, ConstraintValidatorContext context) {
         //You made a list of roles that you count as valid.
         if(inputRole == null){return false;}
-        List<String> roles = List.of("USER", "ROLE");
+        List<String> roles = List.of("USER", "ADMIN");
         return roles.contains(inputRole);    // checking whether inputRole is valid or not.
     }
 }
